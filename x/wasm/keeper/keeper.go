@@ -99,6 +99,7 @@ type Keeper struct {
 	paramSpace           paramtypes.Subspace
 	gasRegister          GasRegister
 	maxQueryStackSize    uint32
+	maxCallDepth         uint32
 	acceptedAccountTypes map[reflect.Type]struct{}
 	accountPruner        AccountPruner
 }
@@ -692,6 +693,24 @@ func checkAndIncreaseQueryStackSize(ctx sdk.Context, maxQueryStackSize uint32) (
 	ctx = ctx.WithContext(context.WithValue(ctx.Context(), contextKeyQueryStackSize, queryStackSize))
 
 	return ctx, nil
+}
+
+func checkAndIncreaseCallDepth(ctx sdk.Context, maxCallDepth uint32) (sdk.Context, error) {
+	var callDepth uint32 = 0
+	if size, ok := types.CallDepth(ctx); ok {
+		callDepth = size
+	}
+
+	// increase
+	callDepth++
+
+	// did we go too far?
+	if callDepth > maxCallDepth {
+		return sdk.Context{}, types.ErrExceedMaxCallDepth
+	}
+
+	// set updated stack size
+	return types.WithCallDepth(ctx, callDepth), nil
 }
 
 // QueryRaw returns the contract's state for give key. Returns `nil` when key is `nil`.

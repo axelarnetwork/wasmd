@@ -85,6 +85,11 @@ var (
 	ErrNoSuchCodeFn = WasmVMFlavouredErrorFactory(sdkErrors.Register(DefaultCodespace, 28, "no such code"),
 		func(id uint64) error { return wasmvmtypes.NoSuchCode{CodeID: id} },
 	)
+
+	// code 29 reserved for wasmd 0.50+
+
+	// ErrExceedMaxCallDepth error if max message stack size is exceeded
+	ErrExceedMaxCallDepth = sdkErrors.Register(DefaultCodespace, 30, "max call depth exceeded")
 )
 
 // WasmVMErrorable mapped error type in wasmvm and are not redacted
