@@ -678,12 +678,17 @@ func (k Keeper) QuerySmart(ctx sdk.Context, contractAddr sdk.AccAddress, req []b
 
 	env := types.NewEnv(ctx, contractAddr)
 	queryResult, gasUsed, qErr := k.wasmVM.Query(codeInfo.CodeHash, env, req, prefixStore, cosmwasmAPI, querier, k.gasMeter(ctx), k.runtimeGasForContract(ctx), costJSONDeserialization)
+	if ctx.GasMeter().GasConsumed()+k.gasRegister.FromWasmVMGas(gasUsed) > ctx.GasMeter().Limit() {
+		k.Logger(ctx).Error("wasm query gas limit exceeded", "contract", contractAddr.String(), "request", hex.EncodeToString(req), "result", hex.EncodeToString(queryResult), "error", qErr.Error(), "gasUsed", gasUsed, "gasConsumed", ctx.GasMeter().Limit(), "gasLimit", ctx.GasMeter().Limit())
+	}
+
 	k.consumeRuntimeGas(ctx, gasUsed)
 	if qErr != nil {
 		k.Logger(ctx).Error("wasm smart query failed", "contract", contractAddr.String(), "request", hex.EncodeToString(req), "result", hex.EncodeToString(queryResult), "error", qErr.Error(), "gasUsed", gasUsed)
 
 		return nil, sdkerrors.Wrap(types.ErrQueryFailed, qErr.Error())
 	}
+
 	return queryResult, nil
 }
 
