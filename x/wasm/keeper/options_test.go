@@ -52,9 +52,7 @@ func TestConstructorOptions(t *testing.T) {
 		"message handler": {
 			srcOpt: WithMessageHandler(&wasmtesting.MockMessageHandler{}),
 			verify: func(t *testing.T, k Keeper) {
-				require.IsType(t, callDepthMessageHandler{}, k.messenger)
-				messenger, _ := k.messenger.(callDepthMessageHandler)
-				assert.IsType(t, &wasmtesting.MockMessageHandler{}, messenger.Messenger)
+				assert.IsType(t, &wasmtesting.MockMessageHandler{}, k.messenger)
 			},
 		},
 		"query plugins": {
@@ -65,7 +63,7 @@ func TestConstructorOptions(t *testing.T) {
 		},
 		"message handler decorator": {
 			srcOpt: WithMessageHandlerDecorator(func(old Messenger) Messenger {
-				require.IsType(t, callDepthMessageHandler{}, old)
+				require.IsType(t, &MessageHandlerChain{}, old)
 				return &wasmtesting.MockMessageHandler{}
 			}),
 			verify: func(t *testing.T, k Keeper) {

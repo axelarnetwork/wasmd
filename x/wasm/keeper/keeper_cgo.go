@@ -65,8 +65,6 @@ func NewKeeper(
 	for _, o := range opts {
 		o.apply(keeper)
 	}
-	// always wrap the messenger, even if it was replaced by an option
-	keeper.messenger = callDepthMessageHandler{keeper.messenger, keeper.maxCallDepth}
 	// not updatable, yet
 	keeper.wasmVMResponseHandler = NewDefaultWasmVMContractResponseHandler(NewMessageDispatcher(keeper.messenger, keeper))
 	return *keeper
