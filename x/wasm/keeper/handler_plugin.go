@@ -108,6 +108,23 @@ func (h SDKMessageHandler) handleSdkMessage(ctx sdk.Context, contractAddr sdk.Ad
 	return nil, sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "can't route message %+v", msg)
 }
 
+// TODO: remove during next coordinated upgrade
+// buggyCallDepthMessageHandler is a wrapper around a Messenger that checks the call depth before dispatching a message.
+type buggyCallDepthMessageHandler struct {
+	Messenger
+	MaxCallDepth uint32
+}
+
+// TODO: remove during next coordinated upgrade
+func (h buggyCallDepthMessageHandler) DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddress, contractIBCPortID string, msg wasmvmtypes.CosmosMsg) (events []sdk.Event, data [][]byte, err error) {
+	ctx, err = checkAndIncreaseCallDepthBuggy(ctx, h.MaxCallDepth)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return h.Messenger.DispatchMsg(ctx, contractAddr, contractIBCPortID, msg)
+}
+
 // MessageHandlerChain defines a chain of handlers that are called one by one until it can be handled.
 type MessageHandlerChain struct {
 	handlers []Messenger

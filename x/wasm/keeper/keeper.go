@@ -709,6 +709,25 @@ func checkAndIncreaseQueryStackSize(ctx sdk.Context, maxQueryStackSize uint32) (
 	return ctx, nil
 }
 
+// TODO: remove during next coordinated upgrade
+func checkAndIncreaseCallDepthBuggy(ctx sdk.Context, maxCallDepth uint32) (sdk.Context, error) {
+	var callDepth uint32 = 0
+	if size, ok := types.CallDepthBuggy(ctx); ok {
+		callDepth = size
+	}
+
+	// increase
+	callDepth++
+
+	// did we go too far?
+	if callDepth > maxCallDepth {
+		return sdk.Context{}, types.ErrExceedMaxCallDepth
+	}
+
+	// set updated stack size
+	return types.WithCallDepthBuggy(ctx, callDepth), nil
+}
+
 func checkAndIncreaseCallDepth(ctx sdk.Context, maxCallDepth uint32) (sdk.Context, error) {
 	var callDepth uint32 = 0
 	if size, ok := types.CallDepth(ctx); ok {
