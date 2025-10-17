@@ -1,9 +1,10 @@
 package keeper
 
 import (
-	"github.com/prometheus/client_golang/prometheus"
 	"reflect"
 	"testing"
+
+	"github.com/prometheus/client_golang/prometheus"
 
 	wasmvm "github.com/CosmWasm/wasmvm"
 
@@ -52,7 +53,9 @@ func TestConstructorOptions(t *testing.T) {
 		"message handler": {
 			srcOpt: WithMessageHandler(&wasmtesting.MockMessageHandler{}),
 			verify: func(t *testing.T, k Keeper) {
-				assert.IsType(t, &wasmtesting.MockMessageHandler{}, k.messenger)
+				require.IsType(t, buggyCallDepthMessageHandler{}, k.messenger)
+				messenger, _ := k.messenger.(buggyCallDepthMessageHandler)
+				assert.IsType(t, &wasmtesting.MockMessageHandler{}, messenger.Messenger)
 			},
 		},
 		"query plugins": {
@@ -67,7 +70,7 @@ func TestConstructorOptions(t *testing.T) {
 				return &wasmtesting.MockMessageHandler{}
 			}),
 			verify: func(t *testing.T, k Keeper) {
-				assert.IsType(t, &wasmtesting.MockMessageHandler{}, k.messenger)
+				assert.IsType(t, buggyCallDepthMessageHandler{}, k.messenger)
 			},
 		},
 		"query plugins decorator": {

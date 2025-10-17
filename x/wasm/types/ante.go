@@ -19,8 +19,7 @@ const (
 	// contextKeyGasRegister = iota
 	_
 
-	// contextKeyCallDepth contextKey = iota
-	_
+	contextKeyCallDepth contextKey = iota
 
 	// contextKeyTxContracts contextKey = iota
 	_
